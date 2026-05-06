@@ -4,10 +4,9 @@ import br.com.wallet.wallet.domain.events.WalletEvent;
 import br.com.wallet.wallet.domain.gateways.EventStoreRepository;
 import br.com.wallet.wallet.infrastructure.entities.EventEntity;
 import br.com.wallet.wallet.infrastructure.persistence.SpringDataEventStoreRepository;
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Repository;
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -28,7 +27,7 @@ public class JpaEventStoreRepository implements EventStoreRepository {
             EventEntity entity = new EventEntity();
             entity.setAggregateId(event.aggregateId());
             entity.setOccurredAt(event.occurredAt());
-            entity.setEventType(event.getClass().getName()); // Usar o nome completo ajuda na reconstrução
+            entity.setEventType(event.getClass().getName());
 
             String jsonPayload = objectMapper.writeValueAsString(event);
             entity.setPayload(jsonPayload);

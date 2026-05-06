@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # Banco de Dados para o Event Store e para a Projeção (Read Model)
+  postgres:
+    image: postgres:15
+    container_name: wallet-postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: wallet_db
+    ports:
+      - "5432:5432"
+    networks:
+      - wallet-network
+
+  localstack:
+    image: localstack/localstack:3.0.2 # Use uma versão estável específica
+    container_name: wallet-aws
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=sns,sqs
+      - DEBUG=1
+      - AWS_DEFAULT_REGION=us-east-1
+      - EDGE_PORT=4566
+      - ACTIVATE_PRO=false # Garante que ele não tente ativar o modo Pro
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh"
+    networks:
+      - wallet-network
+
+networks:
+  wallet-network:
+    driver: bridge

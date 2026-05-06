@@ -3,6 +3,7 @@ package br.com.wallet.wallet.domain.model;
 import br.com.wallet.wallet.domain.events.*;
 import br.com.wallet.wallet.infrastructure.entities.EventEntity;
 import lombok.Getter;
+import org.springframework.data.annotation.CreatedBy;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -31,20 +32,27 @@ public class Wallet {
         applyAndStage(event);
     }
 
-  private void apply(WalletEvent event) {
-    if (event instanceof WalletCreated e) {
-        this.id = e.aggregateId();
-    } else if (event instanceof MoneyDeposited e) {
-        this.balance = this.balance.add(e.amount());
-    } else if (event instanceof MoneyWithdrawn e) {
-        this.balance = this.balance.subtract(e.amount());
-    } else if (event instanceof DividendsReceived e) {
-        this.balance = this.balance.add(e.amount());
+    public void create(UUID ownerId){
+        applyAndStage(new WalletCreated(UUID.randomUUID(), ownerId, Instant.now()));
     }
 
-  }
+    private void apply(WalletEvent event) {
+        if (event instanceof WalletCreated e) {
+            this.id = e.aggregateId();
+        } else if (event instanceof MoneyDeposited e) {
+            this.balance = this.balance.add(e.amount());
+        } else if (event instanceof MoneyWithdrawn e) {
+            this.balance = this.balance.subtract(e.amount());
+        } else if (event instanceof DividendsReceived e) {
+            this.balance = this.balance.add(e.amount());
+        }
+    }
   private void applyAndStage(WalletEvent event) {
     this.apply(event);
     this.uncommittedChanges.add(event);
   }
+
+    public void markChangesAsCommitted() {
+        this.uncommittedChanges.clear();
+    }
 }

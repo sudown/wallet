@@ -6,8 +6,9 @@ import br.com.wallet.wallet.domain.events.MoneyWithdrawn;
 import br.com.wallet.wallet.domain.events.WalletEvent;
 import br.com.wallet.wallet.infrastructure.entities.WalletSummaryEntity;
 import br.com.wallet.wallet.infrastructure.persistence.WalletSummaryRepository;
-import org.springframework.stereotype.Component;
 import io.awspring.cloud.sqs.annotation.SqsListener;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 
@@ -21,12 +22,10 @@ public class WalletProjectionListener {
     }
 
     @SqsListener("${events.sqs.queue-name}")
-    public void handle(WalletEvent event) {
-        // Buscamos a projeção (o estado atual mastigado)
+    public void handle(@Payload WalletEvent event) {
         var summary = summaryRepository.findById(event.aggregateId())
                 .orElseGet(() -> new WalletSummaryEntity(event.aggregateId()));
 
-        // Atualizamos a projeção baseada no evento que chegou
         if (event instanceof MoneyDeposited e) {
             summary.setBalance(summary.getBalance().add(e.amount()));
         } else if (event instanceof MoneyWithdrawn e) {
