@@ -14,7 +14,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "wallet_summary")
 @Getter
-@Setter
 @NoArgsConstructor
 public class WalletSummaryEntity {
     @Id
@@ -25,6 +24,22 @@ public class WalletSummaryEntity {
     public WalletSummaryEntity(UUID id) {
         this.id = id;
         this.balance = BigDecimal.ZERO;
+        this.lastUpdate = Instant.now();
+    }
+
+    public void withdraw(BigDecimal amount){
+        if(amount.compareTo(this.balance) > 0){
+            throw new IllegalArgumentException("You cannot withdraw more than your balance.");
+        }
+        this.balance = amount;
+        this.lastUpdate = Instant.now();
+    }
+
+    public void deposit(BigDecimal amount){
+        if(amount.compareTo(BigDecimal.ZERO) < 0){
+            throw new IllegalArgumentException("You cannot deposit negative values.");
+        }
+        this.balance = amount;
         this.lastUpdate = Instant.now();
     }
 }
