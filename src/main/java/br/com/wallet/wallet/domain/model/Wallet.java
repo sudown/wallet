@@ -3,6 +3,7 @@ package br.com.wallet.wallet.domain.model;
 import br.com.wallet.wallet.domain.events.*;
 import br.com.wallet.wallet.infrastructure.entities.EventEntity;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedBy;
 
 import java.math.BigDecimal;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Getter
+@Setter
 public class Wallet {
   private UUID id;
   private BigDecimal balance = BigDecimal.ZERO;
@@ -33,7 +35,8 @@ public class Wallet {
     }
 
     public void create(UUID ownerId){
-        applyAndStage(new WalletCreated(UUID.randomUUID(), ownerId, Instant.now()));
+        this.id = UUID.randomUUID();
+        applyAndStage(new WalletCreated(this.id, ownerId, Instant.now()));
     }
 
     private void apply(WalletEvent event) {

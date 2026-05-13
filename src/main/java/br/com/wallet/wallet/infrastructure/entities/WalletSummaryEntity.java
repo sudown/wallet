@@ -39,7 +39,7 @@ public class WalletSummaryEntity {
         if(amount.compareTo(BigDecimal.ZERO) < 0){
             throw new IllegalArgumentException("You cannot deposit negative values.");
         }
-        this.balance = amount;
+        this.balance = this.balance.add(amount);
         this.lastUpdate = Instant.now();
     }
 }

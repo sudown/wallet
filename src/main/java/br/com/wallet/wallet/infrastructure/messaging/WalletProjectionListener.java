@@ -25,7 +25,7 @@ public class WalletProjectionListener {
     }
 
 
-    @SqsListener("${events.sqs.queue-name}")
+    @SqsListener("${events.sqs.queue-url}")
     public void handle(@Payload WalletEvent event) {
         var summary = summaryRepository.findById(event.aggregateId())
                 .orElseGet(() -> new WalletSummaryEntity(event.aggregateId()));

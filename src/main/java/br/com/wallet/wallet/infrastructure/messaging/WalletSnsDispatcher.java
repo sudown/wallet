@@ -18,19 +18,21 @@ public class WalletSnsDispatcher {
         this.snsPublisher = snsPublisher;
     }
 
-    @Async
-    @Retryable(
-            retryFor = { Exception.class },
-            maxAttempts = 3,
-            backoff = @Backoff(delay = 1000, multiplier = 2)
-    )
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void dispatchToSns(WalletEvent event) {
-        snsPublisher.publish(event);
+    public void handleAfterCommit(WalletEvent event) {
+        // Apenas repassa para o método assíncrono
+        // Isso garante que a transação principal termine em paz
+        this.publishAsync(event);
     }
 
-    @Recover
-    public void recover(Exception e, WalletEvent event) {
-        System.err.println("Falha definitiva ao publicar evento: " + event.aggregateId());
+    @Async
+    public void publishAsync(WalletEvent event) {
+        try {
+            snsPublisher.publish(event);
+        } catch (Exception e) {
+            // Logamos o erro, mas não deixamos ele subir
+            // Se ele subir aqui, ele tenta "melar" uma requisição que já deu certo
+            System.err.println("Erro assíncrono ao postar no SNS: " + e.getMessage());
+        }
     }
 }
